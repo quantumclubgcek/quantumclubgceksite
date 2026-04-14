@@ -14,7 +14,7 @@ export default {
       });
     }
 
-// 1. IDENTITY ENDPOINTS
+    // 1. IDENTITY ENDPOINTS
     if (url.pathname.startsWith("/api/identity")) {
       // In a real Firebase setup, Decap sends the token in the headers
       const authHeader = request.headers.get("Authorization");
