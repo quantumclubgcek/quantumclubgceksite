@@ -4,7 +4,7 @@ compatibility_date = "2026-04-14"
 
 [assets]
 directory = "./"
-binding = "assets"
+binding = "ASSETS"
 
 [vars]
 # You can put non-sensitive variables here, 
