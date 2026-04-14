@@ -14,44 +14,52 @@ export default {
       });
     }
 
-    // 1. DYNAMIC IDENTITY ROUTE
+    // 1. DYNAMIC IDENTITY ROUTE (Fixed 'full_name' crash)
     if (url.pathname.startsWith("/api/identity")) {
-      let userEmail = "club-member@quantum.club"; // Fallback
+      let userEmail = "member@quantum.club"; 
 
-      // Capture the email used during the Firebase login attempt
       if (request.method === "POST") {
         try {
           const body = await request.clone().json();
           if (body.email) userEmail = body.email;
-        } catch (e) { /* use default */ }
+        } catch (e) { /* use default email */ }
       }
 
-      // Create a payload that identifies the specific user
-      const userPayload = {
-        sub: btoa(userEmail).substring(0, 12), // Unique ID per user
+      // We MUST include full_name here, even if it's just a placeholder,
+      // otherwise the Decap CMS UI will crash on login.
+      const userObj = {
+        id: btoa(userEmail).substring(0, 12),
         email: userEmail,
         app_metadata: { roles: ["admin"] },
-        user_metadata: {} // Empty as requested, but present to prevent CMS errors
+        user_metadata: { 
+          full_name: "Quantum Member", // This fixes the 'undefined' error
+          avatar_url: "" 
+        }
       };
 
-      const encodedPayload = btoa(JSON.stringify(userPayload)).replace(/=/g, "");
+      const encodedPayload = btoa(JSON.stringify({
+        sub: userObj.id,
+        email: userObj.email,
+        app_metadata: userObj.app_metadata,
+        user_metadata: userObj.user_metadata
+      })).replace(/=/g, "");
+
       const finalJWT = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${encodedPayload}.signature`;
 
       return new Response(JSON.stringify({
         token: finalJWT,
         access_token: finalJWT,
         token_type: "bearer",
-        user: userPayload
+        user: userObj
       }), {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
     }
 
-    // 2. GATEWAY ROUTE (The GitHub Bridge)
+    // 2. GATEWAY ROUTE (GitHub Bridge)
     if (url.pathname.startsWith("/api/gateway")) {
       const path = url.pathname.replace("/api/gateway", "");
 
-      // Bypass the 404 settings error
       if (path === "/settings" || path === "/settings/") {
         return new Response(JSON.stringify({ roles: ["admin"], github_enabled: true }), {
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
@@ -79,11 +87,11 @@ export default {
           headers: responseHeaders,
         });
       } catch (err) {
-        return new Response("Bridge Connection Failed", { status: 500 });
+        return new Response("Bridge Error", { status: 500 });
       }
     }
 
-    // 3. FALLBACK: SERVE ASSETS
+    // 3. FALLBACK: ASSETS
     try {
       return await env.ASSETS.fetch(request);
     } catch (e) {
