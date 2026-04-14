@@ -120,45 +120,65 @@
     </footer>
 
     <script>
-      if (window.netlifyIdentity) {
-        window.netlifyIdentity.on("init", user => {
-          if (!user) {
-            window.netlifyIdentity.on("login", () => {
-              document.location.href = "/admin/";
-            });
-          }
+      // Netlify Identity Logic
+  if (window.netlifyIdentity) {
+    window.netlifyIdentity.on("init", user => {
+      if (!user) {
+        window.netlifyIdentity.on("login", () => {
+          document.location.href = "/admin/";
         });
       }
+    });
+  }
 
-      const GITHUB_ORG = 'quantumclubgcek'; 
-      const REPO_NAME = 'quantumclubgceksite';
+  // UPDATED: More robust fetch logic
+  const GITHUB_ORG = 'quantum-club-repo'; 
+  const REPO_NAME = 'quantum-club-site';
 
-      async function updateHomePreviews() {
-          try {
-              // Blog Update
-              const blogRes = await fetch(`https://api.github.com/repos/${GITHUB_ORG}/${REPO_NAME}/contents/blog`);
-              const blogFiles = await blogRes.json();
-              if (Array.isArray(blogFiles) && blogFiles.length > 0) {
-                  const latestBlog = blogFiles.filter(f => f.name.endsWith('.md')).pop();
-                  const cleanBlogTitle = latestBlog.name.replace('.md', '').split('-').filter(p => isNaN(p)).join(' ');
-                  document.getElementById('latest-blog-title').innerText = cleanBlogTitle;
+  async function updateHomePreviews() {
+      const blogTitleEl = document.getElementById('latest-blog-title');
+      const eventTitleEl = document.getElementById('latest-event-title');
+
+      try {
+          // Fetch Blog Data
+          const blogRes = await fetch(`https://api.github.com/repos/${GITHUB_ORG}/${REPO_NAME}/contents/blog`);
+          const blogFiles = await blogRes.json();
+          
+          if (Array.isArray(blogFiles)) {
+              // Filter for markdown files and sort to get the last one
+              const posts = blogFiles.filter(f => f.name.endsWith('.md'));
+              if (posts.length > 0) {
+                  const latest = posts[posts.length - 1]; // Get the last file in the folder
+                  const cleanTitle = latest.name.replace('.md', '').split('-').filter(p => isNaN(p)).join(' ');
+                  blogTitleEl.innerText = cleanTitle;
+              } else {
+                  blogTitleEl.innerText = "No Posts Yet";
               }
-
-              // Event Update
-              const eventRes = await fetch(`https://api.github.com/repos/${GITHUB_ORG}/${REPO_NAME}/contents/events`);
-              const eventFiles = await eventRes.json();
-              if (Array.isArray(eventFiles) && eventFiles.length > 0) {
-                  const latestEvent = eventFiles.filter(f => f.name.endsWith('.md')).pop();
-                  const cleanEventTitle = latestEvent.name.replace('.md', '').split('-').filter(p => isNaN(p)).join(' ');
-                  document.getElementById('latest-event-title').innerText = cleanEventTitle;
-              }
-          } catch (e) {
-              document.getElementById('latest-blog-title').innerText = "Live Feed Offline";
-              document.getElementById('latest-event-title').innerText = "Live Feed Offline";
           }
-      }
 
-      updateHomePreviews();
+          // Fetch Event Data
+          const eventRes = await fetch(`https://api.github.com/repos/${GITHUB_ORG}/${REPO_NAME}/contents/events`);
+          const eventFiles = await eventRes.json();
+          
+          if (Array.isArray(eventFiles)) {
+              const events = eventFiles.filter(f => f.name.endsWith('.md'));
+              if (events.length > 0) {
+                  const latest = events[events.length - 1];
+                  const cleanTitle = latest.name.replace('.md', '').split('-').filter(p => isNaN(p)).join(' ');
+                  eventTitleEl.innerText = cleanTitle;
+              } else {
+                  eventTitleEl.innerText = "No Events Scheduled";
+              }
+          }
+      } catch (e) {
+          console.error("GitHub Fetch Error:", e);
+          blogTitleEl.innerText = "Database Connection Lost";
+          eventTitleEl.innerText = "Database Connection Lost";
+      }
+  }
+
+  // Execute after a tiny delay to ensure DOM is fully ready
+  window.addEventListener('DOMContentLoaded', updateHomePreviews);
     </script>
     <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
 <script>
