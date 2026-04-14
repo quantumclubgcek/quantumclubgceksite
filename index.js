@@ -14,36 +14,38 @@ export default {
       });
     }
 
-    // 1. DYNAMIC IDENTITY ROUTE (Fixed 'full_name' crash)
+    // 1. IDENTITY ROUTE
     if (url.pathname.startsWith("/api/identity")) {
-      let userEmail = "member@quantum.club"; 
+      let userEmail = "member@quantumclubgcek.com"; 
 
       if (request.method === "POST") {
         try {
           const body = await request.clone().json();
           if (body.email) userEmail = body.email;
-        } catch (e) { /* use default email */ }
+        } catch (e) {}
       }
 
-      // We MUST include full_name here, even if it's just a placeholder,
-      // otherwise the Decap CMS UI will crash on login.
+      // This object MUST match exactly what the CMS expects
       const userObj = {
         id: btoa(userEmail).substring(0, 12),
         email: userEmail,
         app_metadata: { roles: ["admin"] },
         user_metadata: { 
-          full_name: "Quantum Member", // This fixes the 'undefined' error
+          full_name: "Club Member", 
           avatar_url: "" 
         }
       };
 
-      const encodedPayload = btoa(JSON.stringify({
+      // We stringify the WHOLE user metadata into the JWT to prevent 'undefined'
+      const tokenPayload = {
         sub: userObj.id,
         email: userObj.email,
         app_metadata: userObj.app_metadata,
-        user_metadata: userObj.user_metadata
-      })).replace(/=/g, "");
+        user_metadata: userObj.user_metadata,
+        iat: Math.floor(Date.now() / 1000)
+      };
 
+      const encodedPayload = btoa(JSON.stringify(tokenPayload)).replace(/=/g, "");
       const finalJWT = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${encodedPayload}.signature`;
 
       return new Response(JSON.stringify({
