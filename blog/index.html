@@ -38,7 +38,8 @@
         .post-body { color: #374151; line-height: 1.8; font-size: 1.125rem; }
         .post-body h1, .post-body h2 { color: #111827; font-weight: 900; text-transform: uppercase; margin-top: 2.5rem; margin-bottom: 1rem; }
         .post-body p { margin-bottom: 1.5rem; }
-        .post-body img { border-radius: 1.5rem; border: 1px solid #f3f4f6; margin: 3rem 0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); }
+        /* Robust image handling for blog content */
+        .post-body img { border-radius: 1.5rem; border: 1px solid #f3f4f6; margin: 2rem 0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); width: 100%; height: auto; }
         .post-body code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; color: #0ea5e9; font-weight: 600; }
         .hidden { display: none; }
     </style>
@@ -104,38 +105,81 @@
                     finalMarkdown = parts.slice(2).join('---');
                     parts[1].split('\n').forEach(line => {
                         const [key, ...val] = line.split(':');
-                        if (key) metadata[key.trim()] = val.join(':').trim();
+                        if (key && val.length > 0) metadata[key.trim()] = val.join(':').trim();
                     });
                 }
 
+                // Construct Header Image if present in Front Matter
+                let headerImageHtml = '';
+                if (metadata.image) {
+                    const imageUrl = metadata.image.startsWith('http') 
+                        ? metadata.image 
+                        : `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO_NAME}/main${metadata.image}`;
+                    headerImageHtml = `<img src="${imageUrl}" class="w-full h-auto rounded-3xl mb-10 shadow-2xl border border-gray-100" alt="Blog Header">`;
+                }
+
                 const dateStr = metadata.date ? new Date(metadata.date).toLocaleDateString() : 'Technical Entry';
+                
                 postHeader.innerHTML = `
                     <div class="flex items-center gap-4 mb-6">
                         <span class="text-xs font-black text-brand-blue uppercase tracking-widest">${dateStr}</span>
                         <div class="h-1 w-1 bg-gray-300 rounded-full"></div>
                         <span class="text-xs font-black text-brand-green uppercase tracking-widest">${metadata.author || 'Quantum Lab'}</span>
                     </div>
+                    ${headerImageHtml}
                     <h1 class="text-4xl md:text-6xl font-black text-gray-950 uppercase leading-tight tracking-tighter mb-10">${metadata.title || 'Untitled Log'}</h1>
                 `;
-                postContent.innerHTML = marked.parse(finalMarkdown);
-            } catch (err) { postContent.innerHTML = "Error loading content."; }
+
+                // Configure marked to handle relative image paths inside the markdown body
+                const renderer = new marked.Renderer();
+                renderer.image = function(href, title, text) {
+                    let out = href;
+                    if (!href.startsWith('http')) {
+                        out = `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO_NAME}/main${href.startsWith('/') ? '' : '/'}${href}`;
+                    }
+                    return `<img src="${out}" alt="${text || ''}" title="${title || ''}">`;
+                };
+
+                postContent.innerHTML = marked.parse(finalMarkdown, { renderer: renderer });
+                window.scrollTo(0,0);
+
+            } catch (err) { 
+                console.error(err);
+                postContent.innerHTML = "<p class='text-red-500 font-bold uppercase text-center'>Connection Error: Subatomic link failed.</p>"; 
+            }
         }
 
         async function fetchBlogs() {
             try {
                 const response = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/blog`);
                 const files = await response.json();
+                
+                if (!Array.isArray(files)) throw new Error("Not an array");
+
                 const posts = files.filter(file => file.name.endsWith('.md')).reverse();
                 blogList.innerHTML = ''; 
+                
                 posts.forEach(post => {
                     const card = document.createElement('div');
                     card.className = "group p-8 bg-white border border-gray-200 rounded-3xl glow transition-all cursor-pointer flex flex-col md:flex-row justify-between items-center gap-4";
+                    
                     const titleClean = post.name.replace('.md', '').split('-').filter(p => isNaN(p)).join(' ');
-                    card.innerHTML = `<div><span class="text-[10px] font-black text-brand-blue uppercase tracking-widest mb-1 block">Log Entry</span><h2 class="text-2xl font-black text-gray-900 group-hover:text-brand-blue transition uppercase tracking-tight">${titleClean}</h2></div><span class="text-xs font-black text-brand-green tracking-widest uppercase">Read Insight →</span>`;
+                    
+                    card.innerHTML = `
+                        <div>
+                            <span class="text-[10px] font-black text-brand-blue uppercase tracking-widest mb-1 block">Log Entry</span>
+                            <h2 class="text-2xl font-black text-gray-900 group-hover:text-brand-blue transition uppercase tracking-tight">${titleClean}</h2>
+                        </div>
+                        <span class="text-xs font-black text-brand-green tracking-widest uppercase">Read Insight →</span>
+                    `;
+                    
                     card.onclick = () => readPost(post.download_url);
                     blogList.appendChild(card);
                 });
-            } catch (e) { blogList.innerHTML = "Offline."; }
+            } catch (e) { 
+                console.error(e);
+                blogList.innerHTML = "<p class='text-center py-20 text-gray-400 font-black uppercase tracking-widest'>Archives Offline.</p>"; 
+            }
         }
         fetchBlogs();
     </script>
