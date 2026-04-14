@@ -1,8 +1,9 @@
 backend:
-  name: git-gateway
-  # This points to your Cloudflare Worker middleware
-  gateway_url: https://quantumclubgceksite.quantumclubgcek.workers.dev/api/gateway
-  identity_url: https://quantumclubgceksite.quantumclubgcek.workers.dev/api/identity
+  name: github
+  repo: quantumclubgcek/quantumclubgceksite
+  branch: main
+  base_url: https://quantumclubgceksite.quantumclubgcek.workers.dev # Your Worker URL
+  auth_endpoint: /api/auth
 
 # Updated to match your specific directory structure
 media_folder: "assets/images/uploads"
