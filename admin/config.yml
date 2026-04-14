@@ -1,0 +1,34 @@
+backend:
+  name: github
+  repo: quantum-club-repo/quantum-club-site
+  branch: main
+  base_url: https://quantumclubgcek.firebaseapp.com
+  auth_endpoint: /auth
+
+media_folder: "assets/uploads"
+public_folder: "/assets/uploads"
+
+collections:
+  - name: "blog"
+    label: "Blog & Writings"
+    folder: "blog"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    fields:
+      - {label: "Title", name: "title", widget: "string"}
+      - {label: "Author", name: "author", widget: "string"}
+      - {label: "Publish Date", name: "date", widget: "datetime"}
+      - {label: "Featured Image", name: "thumbnail", widget: "image"}
+      - {label: "Body", name: "body", widget: "markdown"}
+
+  - name: "events"
+    label: "Events & Workshops"
+    folder: "events"
+    create: true
+    fields:
+      - {label: "Event Name", name: "title", widget: "string"}
+      - {label: "Date", name: "date", widget: "date"}
+      - {label: "Event Poster", name: "image", widget: "image"}
+      - {label: "Description", name: "description", widget: "text"}
+      - {label: "Resource Download (PDF/Doc)", name: "upload", widget: "file", required: false}
+      - {label: "Body Details", name: "body", widget: "markdown"}
