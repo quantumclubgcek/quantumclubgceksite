@@ -14,11 +14,9 @@ export default {
       });
     }
 
-    // 1. IDENTITY ENDPOINTS (Firebase/Login Handshake)
+    // 1. IDENTITY ENDPOINTS
     if (url.pathname.startsWith("/api/identity")) {
-      // This fake JWT prevents the "reading 'replace'" error in the Decap UI
       const fakeJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFkbWluIiwiaWF0IjoyNTE2MjM5MDIyfQ.signature";
-      
       return new Response(JSON.stringify({
         url: "",
         token: fakeJWT,
@@ -32,11 +30,10 @@ export default {
       });
     }
 
-    // 2. GATEWAY PROXY (The Bridge to GitHub)
+    // 2. GATEWAY PROXY
     if (url.pathname.startsWith("/api/gateway")) {
       const path = url.pathname.replace("/api/gateway", "");
 
-      // Handle the /settings check to bypass the 404 error
       if (path === "/settings" || path === "/settings/") {
         return new Response(JSON.stringify({ roles: ["admin"], github_enabled: true }), {
           headers: {
@@ -46,10 +43,7 @@ export default {
         });
       }
 
-      // Construct the GitHub API URL
       const githubUrl = `https://api.github.com/repos/quantumclubgcek/quantumclubgceksite/contents${path}`;
-
-      // Prepare headers using your secret GITHUB_TOKEN
       const headers = new Headers();
       headers.set("Authorization", `token ${env.GITHUB_TOKEN}`);
       headers.set("User-Agent", "Quantum-Club-CMS-Bridge");
@@ -81,7 +75,7 @@ export default {
     try {
       return await env.ASSETS.fetch(request);
     } catch (e) {
-      return new Response("Asset not found", { status: 404 });
+      return new Response("Not Found", { status: 404 });
     }
-  }
-};
+  } // Closes fetch
+}; // Closes export
