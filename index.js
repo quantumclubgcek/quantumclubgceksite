@@ -34,18 +34,23 @@ export default {
     }
 
     // 2. GATEWAY PROXY (The Bridge to GitHub)
-    if (url.pathname.startsWith("/api/gateway")) {
-      const path = url.pathname.replace("/api/gateway", "");
-
-      // Handle the /settings check to bypass Decap's 404 error
-      if (path === "/settings" || path === "/settings/") {
-        return new Response(JSON.stringify({ roles: ["admin"], github_enabled: true }), {
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-          },
-        });
-      }
+    // 2. Identity Endpoints
+    if (url.pathname.startsWith("/api/identity")) {
+      // Create a dummy JWT-like string to prevent the 'replace' error
+      const fakeJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFkbWluIiwiaWF0IjoyNTE2MjM5MDIyfQ.signature";
+      
+      return new Response(JSON.stringify({
+        url: "",
+        token: fakeJWT,
+        access_token: fakeJWT,
+        token_type: "bearer"
+      }), {
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+        },
+      });
+    }
 
       // Construct the GitHub API URL
       const githubUrl = `https://api.github.com/repos/quantumclubgcek/quantumclubgceksite/contents${path}`;
