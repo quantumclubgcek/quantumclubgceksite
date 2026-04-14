@@ -8,8 +8,8 @@ export default {
       return Response.redirect(githubAuthUrl, 302);
     }
 
-    // 2. OAUTH CALLBACK
-    if (url.pathname === "/api/callback") {
+    // 2. OAUTH CALLBACK (Matches your screenshot path)
+    if (url.pathname === "/api/auth/callback" || url.pathname === "/api/callback") {
       const code = url.searchParams.get("code");
       
       const response = await fetch("https://github.com/login/oauth/access_token", {
@@ -27,7 +27,6 @@ export default {
 
       const data = await response.json();
       
-      // PostMessage script to send the token back to Decap CMS
       const script = `
         <script>
           const receiveMessage = (message) => {
