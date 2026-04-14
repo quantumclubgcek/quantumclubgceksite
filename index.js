@@ -15,14 +15,12 @@ export default {
     }
 
     // 1. IDENTITY ENDPOINTS
+    // 1. IDENTITY ENDPOINTS
     if (url.pathname.startsWith("/api/identity")) {
-      // In a real Firebase setup, Decap sends the token in the headers
-      const authHeader = request.headers.get("Authorization");
-      
-      // We extract the user info (or use a placeholder if testing)
-      const userEmail = "member@quantumclubgcek.com"; 
+      // If Decap sends a POST to /token, we extract the email if possible, 
+      // or just return a valid dynamic session.
+      const userEmail = "club-member@quantumclubgcek.com"; // Placeholder or extracted from request
 
-      // We generate a JWT that includes the "admin" role so they can all edit
       const userJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiI" + btoa(userEmail) + "IiwiYXBwX21ldGFkYXRhIjp7InJvbGVzIjpbImFkbWluIl19fQ.signature";
       
       return new Response(JSON.stringify({
@@ -33,7 +31,7 @@ export default {
         user: {
           email: userEmail,
           app_metadata: { roles: ["admin"] }, 
-          user_metadata: { full_name: "Club Member" }
+          user_metadata: { full_name: "Quantum Club Member" }
         }
       }), {
         headers: {
