@@ -2,13 +2,13 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // 1. OAUTH INITIATION
+    
     if (url.pathname === "/api/auth") {
       const githubAuthUrl = `https://github.com/login/oauth/authorize?client_id=${env.GITHUB_CLIENT_ID}&scope=repo,user`;
       return Response.redirect(githubAuthUrl, 302);
     }
 
-    // 2. OAUTH CALLBACK (Matches your screenshot path)
+    
     if (url.pathname === "/api/auth/callback" || url.pathname === "/api/callback") {
       const code = url.searchParams.get("code");
       
