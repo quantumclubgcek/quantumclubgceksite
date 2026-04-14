@@ -14,22 +14,26 @@ export default {
       });
     }
 
-    // 1. IDENTITY ENDPOINTS
-    // 1. IDENTITY ENDPOINTS
+// 1. IDENTITY ENDPOINTS
     if (url.pathname.startsWith("/api/identity")) {
-      // This JWT now includes: {"sub":"123","email":"admin@quantum.club","app_metadata":{"roles":["admin"]}}
-      const adminJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJhZG1pbkBxdWFudHVtLmNsdWIiLCJhcHBfbWV0YWRhdGEiOnsicm9sZXMiOlsiYWRtaW4iXX19.signature";
+      // In a real Firebase setup, Decap sends the token in the headers
+      const authHeader = request.headers.get("Authorization");
+      
+      // We extract the user info (or use a placeholder if testing)
+      const userEmail = "member@quantumclubgcek.com"; 
+
+      // We generate a JWT that includes the "admin" role so they can all edit
+      const userJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiI" + btoa(userEmail) + "IiwiYXBwX21ldGFkYXRhIjp7InJvbGVzIjpbImFkbWluIl19fQ.signature";
       
       return new Response(JSON.stringify({
         url: "",
-        token: adminJWT,
-        access_token: adminJWT,
+        token: userJWT,
+        access_token: userJWT,
         token_type: "bearer",
-        // Adding extra fields some versions of the widget look for
         user: {
-          email: "admin@quantum.club",
-          app_metadata: { roles: ["admin"] },
-          user_metadata: { full_name: "Admin" }
+          email: userEmail,
+          app_metadata: { roles: ["admin"] }, 
+          user_metadata: { full_name: "Club Member" }
         }
       }), {
         headers: {
