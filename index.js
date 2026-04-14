@@ -3,7 +3,6 @@ export default {
     const url = new URL(request.url);
 
     // 0. HANDLE CORS PREFLIGHT
-    // Browsers send OPTIONS requests before POST/PUT to check permissions
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -16,12 +15,11 @@ export default {
     }
 
     // 1. IDENTITY ENDPOINTS
-    // Handles the login "handshake" so Decap thinks the user is valid
     if (url.pathname.startsWith("/api/identity")) {
       const identityResponse = {
         url: "",
         token: "proxy-access-granted",
-        access_token: "proxy-access-granted", // For /token requests
+        access_token: "proxy-access-granted",
         token_type: "bearer"
       };
 
@@ -37,7 +35,7 @@ export default {
     if (url.pathname.startsWith("/api/gateway")) {
       const path = url.pathname.replace("/api/gateway", "");
 
-      // Handle the /settings check to bypass Decap's 404 error
+      // Handle the /settings check
       if (path === "/settings" || path === "/settings/") {
         return new Response(JSON.stringify({ roles: ["admin"], github_enabled: true }), {
           headers: {
@@ -47,10 +45,9 @@ export default {
         });
       }
 
-      // Construct the GitHub API URL
+      // Construct GitHub API URL
       const githubUrl = `https://api.github.com/repos/quantumclubgcek/quantumclubgceksite/contents${path}`;
 
-      // Prepare headers for GitHub
       const headers = new Headers();
       headers.set("Authorization", `token ${env.GITHUB_TOKEN}`);
       headers.set("User-Agent", "Quantum-Club-CMS-Bridge");
@@ -63,7 +60,6 @@ export default {
           body: request.method !== "GET" && request.method !== "HEAD" ? await request.blob() : null,
         });
 
-        // Forward the GitHub response back to the CMS
         const responseHeaders = new Headers(githubResponse.headers);
         responseHeaders.set("Access-Control-Allow-Origin", "*");
 
@@ -72,7 +68,7 @@ export default {
           headers: responseHeaders,
         });
       } catch (err) {
-        return new Response(JSON.stringify({ error: "Bridge failed to connect to GitHub" }), {
+        return new Response(JSON.stringify({ error: "Bridge failed" }), {
           status: 500,
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
         });
@@ -80,11 +76,10 @@ export default {
     }
 
     // 3. SERVE STATIC ASSETS
-    // This serves your actual website files (HTML, CSS, JS) from Cloudflare
     try {
       return await env.ASSETS.fetch(request);
     } catch (e) {
       return new Response("Asset not found", { status: 404 });
     }
-  },
-};
+  } // This closes the fetch function
+}; // This closes the export default
