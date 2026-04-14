@@ -2,7 +2,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // 0. HANDLE CORS PREFLIGHT
+    // 0. HANDLE CORS PREFLIGHT (Standard security)
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -14,43 +14,47 @@ export default {
       });
     }
 
-    // 1. IDENTITY ENDPOINTS
-    // 1. IDENTITY ENDPOINTS
+    // 1. IDENTITY ROUTE (This is the part that handles different members)
     if (url.pathname.startsWith("/api/identity")) {
-      // If Decap sends a POST to /token, we extract the email if possible, 
-      // or just return a valid dynamic session.
-      const userEmail = "club-member@quantumclubgcek.com"; // Placeholder or extracted from request
+      let userEmail = "member@quantumclubgcek.com"; // Default placeholder
 
-      const userJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiI" + btoa(userEmail) + "IiwiYXBwX21ldGFkYXRhIjp7InJvbGVzIjpbImFkbWluIl19fQ.signature";
-      
+      // Try to read the email of the person currently trying to log in
+      if (request.method === "POST") {
+        try {
+          const body = await request.clone().json();
+          if (body.email) userEmail = body.email;
+        } catch (e) { /* Fallback to default if JSON fails */ }
+      }
+
+      const payload = {
+        sub: btoa(userEmail).substring(0, 10),
+        email: userEmail,
+        app_metadata: { roles: ["admin"] },
+        user_metadata: { full_name: userEmail.split('@')[0] }
+      };
+
+      const encodedPayload = btoa(JSON.stringify(payload)).replace(/=/g, "");
+      const finalJWT = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${encodedPayload}.signature`;
+
       return new Response(JSON.stringify({
         url: "",
-        token: userJWT,
-        access_token: userJWT,
+        token: finalJWT,
+        access_token: finalJWT,
         token_type: "bearer",
-        user: {
-          email: userEmail,
-          app_metadata: { roles: ["admin"] }, 
-          user_metadata: { full_name: "Quantum Club Member" }
-        }
+        user: payload
       }), {
-        headers: {
-          "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
-        },
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
     }
 
-    // 2. GATEWAY PROXY
+    // 2. GATEWAY ROUTE (The Bridge to GitHub)
     if (url.pathname.startsWith("/api/gateway")) {
       const path = url.pathname.replace("/api/gateway", "");
 
+      // Handle Decap's settings check
       if (path === "/settings" || path === "/settings/") {
         return new Response(JSON.stringify({ roles: ["admin"], github_enabled: true }), {
-          headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
-          }
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
         });
       }
 
@@ -82,11 +86,11 @@ export default {
       }
     }
 
-    // 3. SERVE STATIC ASSETS
+    // 3. FALLBACK: SERVE SITE ASSETS
     try {
       return await env.ASSETS.fetch(request);
     } catch (e) {
       return new Response("Not Found", { status: 404 });
     }
-  } // Closes fetch
-}; // Closes export
+  }
+};
