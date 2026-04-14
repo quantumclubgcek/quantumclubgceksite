@@ -15,13 +15,22 @@ export default {
     }
 
     // 1. IDENTITY ENDPOINTS
+    // 1. IDENTITY ENDPOINTS
     if (url.pathname.startsWith("/api/identity")) {
-      const fakeJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkFkbWluIiwiaWF0IjoyNTE2MjM5MDIyfQ.signature";
+      // This JWT now includes: {"sub":"123","email":"admin@quantum.club","app_metadata":{"roles":["admin"]}}
+      const adminJWT = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiZW1haWwiOiJhZG1pbkBxdWFudHVtLmNsdWIiLCJhcHBfbWV0YWRhdGEiOnsicm9sZXMiOlsiYWRtaW4iXX19.signature";
+      
       return new Response(JSON.stringify({
         url: "",
-        token: fakeJWT,
-        access_token: fakeJWT,
-        token_type: "bearer"
+        token: adminJWT,
+        access_token: adminJWT,
+        token_type: "bearer",
+        // Adding extra fields some versions of the widget look for
+        user: {
+          email: "admin@quantum.club",
+          app_metadata: { roles: ["admin"] },
+          user_metadata: { full_name: "Admin" }
+        }
       }), {
         headers: {
           "Content-Type": "application/json",
