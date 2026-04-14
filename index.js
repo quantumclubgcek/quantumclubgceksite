@@ -2,7 +2,7 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // 0. HANDLE CORS PREFLIGHT
+    // 1. Handle CORS Preflight (Essential for browser security)
     if (request.method === "OPTIONS") {
       return new Response(null, {
         headers: {
@@ -14,16 +14,14 @@ export default {
       });
     }
 
-    // 1. IDENTITY ENDPOINTS
+    // 2. Identity Endpoints (The Firebase/Handshake part)
     if (url.pathname.startsWith("/api/identity")) {
-      const identityResponse = {
+      return new Response(JSON.stringify({
         url: "",
         token: "proxy-access-granted",
         access_token: "proxy-access-granted",
         token_type: "bearer"
-      };
-
-      return new Response(JSON.stringify(identityResponse), {
+      }), {
         headers: {
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
@@ -31,11 +29,11 @@ export default {
       });
     }
 
-    // 2. GATEWAY PROXY (The Bridge to GitHub)
+    // 3. Gateway Proxy (The Bridge to GitHub)
     if (url.pathname.startsWith("/api/gateway")) {
       const path = url.pathname.replace("/api/gateway", "");
 
-      // Handle the /settings check
+      // Handle the /settings check to fix the 404
       if (path === "/settings" || path === "/settings/") {
         return new Response(JSON.stringify({ roles: ["admin"], github_enabled: true }), {
           headers: {
@@ -45,9 +43,8 @@ export default {
         });
       }
 
-      // Construct GitHub API URL
+      // Prepare GitHub request
       const githubUrl = `https://api.github.com/repos/quantumclubgcek/quantumclubgceksite/contents${path}`;
-
       const headers = new Headers();
       headers.set("Authorization", `token ${env.GITHUB_TOKEN}`);
       headers.set("User-Agent", "Quantum-Club-CMS-Bridge");
@@ -57,7 +54,7 @@ export default {
         const githubResponse = await fetch(githubUrl, {
           method: request.method,
           headers: headers,
-          body: request.method !== "GET" && request.method !== "HEAD" ? await request.blob() : null,
+          body: (request.method !== "GET" && request.method !== "HEAD") ? await request.blob() : null,
         });
 
         const responseHeaders = new Headers(githubResponse.headers);
@@ -75,11 +72,11 @@ export default {
       }
     }
 
-    // 3. SERVE STATIC ASSETS
+    // 4. Fallback: Serve Static Assets
     try {
       return await env.ASSETS.fetch(request);
     } catch (e) {
-      return new Response("Asset not found", { status: 404 });
+      return new Response("Not Found", { status: 404 });
     }
-  } // This closes the fetch function
-}; // This closes the export default
+  }
+};
