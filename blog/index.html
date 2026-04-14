@@ -38,7 +38,6 @@
         .post-body { color: #374151; line-height: 1.8; font-size: 1.125rem; }
         .post-body h1, .post-body h2 { color: #111827; font-weight: 900; text-transform: uppercase; margin-top: 2.5rem; margin-bottom: 1rem; }
         .post-body p { margin-bottom: 1.5rem; }
-        /* Robust image handling for blog content */
         .post-body img { border-radius: 1.5rem; border: 1px solid #f3f4f6; margin: 2rem 0; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.05); width: 100%; height: auto; }
         .post-body code { background: #f3f4f6; padding: 2px 6px; border-radius: 4px; color: #0ea5e9; font-weight: 600; }
         .hidden { display: none; }
@@ -53,7 +52,6 @@
             <a href="/" class="text-gray-700 hover:text-brand-blue transition uppercase tracking-tight">Home</a>
             <a href="/events" class="text-gray-700 hover:text-brand-blue transition uppercase tracking-tight">Events</a>
             <a href="/blog" class="text-brand-blue transition uppercase tracking-tight border-b-2 border-brand-blue">Blog</a>
-            <a href="/admin/" class="bg-gradient-to-r from-brand-blue to-brand-blueDark text-white px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest glow transition-all">Admin Portal</a>
         </div>
     </nav>
 
@@ -109,7 +107,6 @@
                     });
                 }
 
-                // Construct Header Image if present in Front Matter
                 let headerImageHtml = '';
                 if (metadata.image) {
                     const imageUrl = metadata.image.startsWith('http') 
@@ -130,7 +127,6 @@
                     <h1 class="text-4xl md:text-6xl font-black text-gray-950 uppercase leading-tight tracking-tighter mb-10">${metadata.title || 'Untitled Log'}</h1>
                 `;
 
-                // Configure marked to handle relative image paths inside the markdown body
                 const renderer = new marked.Renderer();
                 renderer.image = function(href, title, text) {
                     let out = href;
