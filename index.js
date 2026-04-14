@@ -1,4 +1,3 @@
-##
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -15,29 +14,30 @@ export default {
       });
     }
 
-    // 1. DYNAMIC IDENTITY ROUTE (Fixed 'full_name' crash)
+    // 1. IDENTITY ROUTE (Dynamic Multi-User Support)
     if (url.pathname.startsWith("/api/identity")) {
-      let userEmail = "member@quantum.club"; 
+      let userEmail = "member@quantumclubgcek.com"; // Default fallback
 
+      // Dynamically extract the email from the login POST body
       if (request.method === "POST") {
         try {
           const body = await request.clone().json();
           if (body.email) userEmail = body.email;
-        } catch (e) { /* use default email */ }
+        } catch (e) { /* Fallback to default if JSON is missing */ }
       }
 
-      // We MUST include full_name here, even if it's just a placeholder,
-      // otherwise the Decap CMS UI will crash on login.
+      // We explicitly define user_metadata with a full_name to prevent the UI crash
       const userObj = {
         id: btoa(userEmail).substring(0, 12),
         email: userEmail,
         app_metadata: { roles: ["admin"] },
         user_metadata: { 
-          full_name: "Quantum Member", // This fixes the 'undefined' error
+          full_name: "Club Member", // Mandatory field to satisfy Decap CMS
           avatar_url: "" 
         }
       };
 
+      // Construct a valid-looking JWT for the frontend
       const encodedPayload = btoa(JSON.stringify({
         sub: userObj.id,
         email: userObj.email,
@@ -57,10 +57,11 @@ export default {
       });
     }
 
-    // 2. GATEWAY ROUTE (GitHub Bridge)
+    // 2. GATEWAY ROUTE (GitHub Proxy Bridge)
     if (url.pathname.startsWith("/api/gateway")) {
       const path = url.pathname.replace("/api/gateway", "");
 
+      // Handle the settings check to prevent 404 errors
       if (path === "/settings" || path === "/settings/") {
         return new Response(JSON.stringify({ roles: ["admin"], github_enabled: true }), {
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
@@ -69,7 +70,7 @@ export default {
 
       const githubUrl = `https://api.github.com/repos/quantumclubgcek/quantumclubgceksite/contents${path}`;
       const headers = new Headers();
-      headers.set("Authorization", `token ${env.GITHUB_TOKEN}`);
+      headers.set("Authorization", `token ${env.GITHUB_TOKEN}`); // Uses your secret GITHUB_TOKEN
       headers.set("User-Agent", "Quantum-Club-CMS-Bridge");
       headers.set("Accept", "application/vnd.github.v3+json");
 
@@ -88,11 +89,14 @@ export default {
           headers: responseHeaders,
         });
       } catch (err) {
-        return new Response("Bridge Error", { status: 500 });
+        return new Response(JSON.stringify({ error: "Bridge Connection Failed" }), { 
+          status: 500,
+          headers: { "Access-Control-Allow-Origin": "*" } 
+        });
       }
     }
 
-    // 3. FALLBACK: ASSETS
+    // 3. FALLBACK: SERVE SITE ASSETS
     try {
       return await env.ASSETS.fetch(request);
     } catch (e) {
