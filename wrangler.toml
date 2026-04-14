@@ -9,6 +9,5 @@ binding = "ASSETS"
 [vars]
 # Add your GitHub Client ID here
 GITHUB_CLIENT_ID = "Ov23lixI9kGDvUP0XccC"
-
-# Note: GITHUB_CLIENT_SECRET must NOT be put here for security. 
-# It must be added via the Cloudflare Dashboard UI as a "Secret".
+GITHUB_CLIENT_SECRET = "522a5e97ef38b9bd3bd723062f30b3b5114eceda" 
+GITHUB_TOKEN = "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"
