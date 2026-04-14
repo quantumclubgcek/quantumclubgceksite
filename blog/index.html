@@ -17,85 +17,110 @@
             scroll-behavior: smooth;
         }
 
-        .blog-card {
-            background: rgba(30, 41, 59, 0.4);
-            border: 1px solid #1e293b;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        .blog-card:hover {
-            border-color: #10b981;
-            transform: translateY(-3px);
-            background: rgba(16, 185, 129, 0.05);
-            box-shadow: 0 15px 30px -10px rgba(59, 130, 246, 0.3);
+        /* Nav Glass Effect */
+        .glass-nav { 
+            backdrop-filter: blur(16px); 
+            background: rgba(2, 6, 23, 0.8); 
+            border-bottom: 1px solid rgba(30, 41, 59, 0.5); 
         }
 
-        .post-title { 
-            font-size: 3.5rem; 
-            font-weight: 900; 
-            line-height: 1.1; 
-            margin-bottom: 1rem; 
+        /* The Quantum Card Style */
+        .blog-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid #1e293b;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .blog-card:hover {
+            border-color: #10b981;
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px -15px rgba(16, 185, 129, 0.2);
+        }
+
+        /* Subtle Glow Effect on Hover */
+        .blog-card::after {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at top right, rgba(16, 185, 129, 0.1), transparent);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+        }
+        .blog-card:hover::after { opacity: 1; }
+
+        /* Typography */
+        .gradient-text {
             background: linear-gradient(90deg, #3b82f6, #10b981);
-            -webkit-background-clip: text; 
-            -webkit-text-fill-color: transparent; 
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 900;
         }
-        .post-meta { 
-            color: #94a3b8; 
-            font-size: 0.95rem; 
-            margin-bottom: 2.5rem; 
-            border-bottom: 1px solid #1e293b; 
-            padding-bottom: 1.5rem; 
-            display: flex;
-            gap: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
+
         .post-body { 
-            color: #cbd5e1; 
+            color: #94a3b8; 
             line-height: 1.8; 
-            font-size: 1.15rem; 
+            font-size: 1.1rem; 
         }
         
-        /* Ensure images inside the body are styled correctly */
+        .post-body h1, .post-body h2, .post-body h3 {
+            color: #f8fafc;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
         .post-body img {
-            border-radius: 1rem;
-            margin: 2rem 0;
-            border: 1px solid #1e293b;
+            border-radius: 1.5rem;
+            margin: 2.5rem 0;
+            border: 1px solid #334155;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
         }
 
         .hidden { display: none; }
-        .glass-nav { backdrop-filter: blur(16px); background: rgba(2, 6, 23, 0.8); border-bottom: 1px solid #1e293b; }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #020617; }
+        ::-webkit-scrollbar-thumb { background: #1e293b; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #10b981; }
     </style>
 </head>
 <body class="antialiased">
 
-    <nav class="fixed top-0 w-full z-50 glass-nav px-6 py-4">
-        <div class="max-w-5xl mx-auto flex justify-between items-center">
-            <a href="/" class="font-black tracking-tighter text-xl text-white">QUANTUM CLUB<span class="text-emerald-500">.</span></a>
-            <button id="back-btn" onclick="showList()" class="hidden text-sm text-blue-400 font-bold hover:text-emerald-400 transition">
-                ← BACK TO ARCHIVE
+    <nav class="fixed top-0 w-full z-50 glass-nav px-8 py-5">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <a href="/" class="font-black tracking-tighter text-2xl text-white italic">
+                QUANTUM<span class="text-emerald-500">CLUB</span>
+            </a>
+            <button id="back-btn" onclick="showList()" class="hidden flex items-center gap-2 text-sm font-bold text-emerald-500 hover:text-blue-400 transition-all uppercase letter-spacing-widest">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0.2 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7" />
+                </svg>
+                Back to Research
             </button>
         </div>
     </nav>
 
-    <main class="pt-32 pb-20 px-6">
+    <main class="pt-40 pb-20 px-6">
         <div class="max-w-4xl mx-auto">
             
             <div id="list-view">
-                <header class="mb-16">
-                    <h1 class="text-6xl font-black mb-4">Quantum <span class="text-emerald-500">Insights</span></h1>
-                    <p class="text-slate-400 text-lg">Exploring the intersection of electronics, firmware, and quantum logic.</p>
+                <header class="mb-20 text-center">
+                    <span class="text-emerald-500 font-bold tracking-[0.3em] text-xs uppercase mb-4 block">Archives & Documentation</span>
+                    <h1 class="text-6xl md:text-7xl mb-6 gradient-text">Insights.</h1>
+                    <p class="text-slate-500 text-lg max-w-xl mx-auto">Deep dives into embedded systems, VLSI design, and the future of electronics at GCEK.</p>
                 </header>
 
-                <div id="blog-list" class="grid gap-6">
-                    <div class="animate-pulse flex flex-col gap-4">
-                        <div class="h-24 bg-slate-900 rounded-2xl"></div>
-                        <div class="h-24 bg-slate-900 rounded-2xl"></div>
-                    </div>
+                <div id="blog-list" class="grid gap-8">
+                    <div class="animate-pulse bg-slate-900/50 h-32 rounded-3xl border border-slate-800"></div>
+                    <div class="animate-pulse bg-slate-900/50 h-32 rounded-3xl border border-slate-800"></div>
                 </div>
             </div>
 
             <div id="reader-view" class="hidden">
+                <div id="post-header" class="mb-12"></div>
                 <article id="post-content" class="post-body">
                     </article>
             </div>
@@ -104,7 +129,6 @@
     </main>
 
     <script>
-        // CONFIGURATION - Updated to your exact repo
         const GITHUB_USER = 'quantumclubgcek'; 
         const REPO_NAME = 'quantumclubgceksite';
         
@@ -112,6 +136,7 @@
         const listView = document.getElementById('list-view');
         const readerView = document.getElementById('reader-view');
         const postContent = document.getElementById('post-content');
+        const postHeader = document.getElementById('post-header');
         const backBtn = document.getElementById('back-btn');
 
         function showList() {
@@ -125,13 +150,12 @@
             listView.classList.add('hidden');
             readerView.classList.remove('hidden');
             backBtn.classList.remove('hidden');
-            postContent.innerHTML = "<p class='text-blue-400 animate-pulse text-center py-20 font-bold tracking-widest'>FETCHING DATA STREAM...</p>";
+            postContent.innerHTML = "<div class='py-20 text-center'><div class='inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-emerald-500 mb-4'></div><p class='text-slate-500 font-mono text-xs tracking-widest uppercase'>Decrypting Node Data...</p></div>";
 
             try {
                 const response = await fetch(downloadUrl);
                 const rawText = await response.text();
 
-                // Frontmatter Extraction
                 const parts = rawText.split('---');
                 let finalMarkdown = rawText;
                 let metadata = {};
@@ -145,44 +169,39 @@
                     });
                 }
 
-                const dateDisplay = metadata.date ? new Date(metadata.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }) : 'Technical Brief';
-
-                // IMAGE FIX: If metadata.thumbnail is "assets/uploads/img.jpg", 
-                // we force it to "/assets/uploads/img.jpg" so Cloudflare finds it at the root.
+                // Image Path Normalization
                 let thumbSrc = metadata.thumbnail;
                 if (thumbSrc && !thumbSrc.startsWith('http') && !thumbSrc.startsWith('/')) {
                     thumbSrc = '/' + thumbSrc;
                 }
 
-                postContent.innerHTML = `
-                    <h1 class="post-title capitalize">${metadata.title || 'Untitled Archive'}</h1>
-                    <div class="post-meta">
-                        <span class="text-blue-400">${metadata.author || 'RESEARCHER'}</span>
-                        <span class="text-slate-700">//</span>
-                        <span class="text-emerald-500">${dateDisplay}</span>
+                const dateStr = metadata.date ? new Date(metadata.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : 'LOG_ENTRY';
+
+                postHeader.innerHTML = `
+                    <div class="flex items-center gap-3 mb-6">
+                        <span class="bg-emerald-500/10 text-emerald-500 px-3 py-1 rounded-full text-[10px] font-bold tracking-tighter uppercase border border-emerald-500/20">${dateStr}</span>
+                        <span class="text-slate-700">/</span>
+                        <span class="text-blue-400 text-[10px] font-bold uppercase tracking-widest">${metadata.author || 'ADMIN'}</span>
                     </div>
-                    ${thumbSrc ? `<img src="${thumbSrc}" class="w-full h-auto max-h-[450px] object-cover rounded-3xl mb-12 border border-slate-800 shadow-2xl">` : ''}
-                    <div class="prose-container">
-                        ${marked.parse(finalMarkdown)}
-                    </div>
+                    <h1 class="text-5xl font-black text-white mb-8 leading-tight">${metadata.title || 'System Log'}</h1>
+                    ${thumbSrc ? `<img src="${thumbSrc}" class="w-full h-[400px] object-cover rounded-[2rem] border border-slate-800">` : ''}
                 `;
+
+                postContent.innerHTML = marked.parse(finalMarkdown);
                 window.scrollTo(0,0);
             } catch (err) {
-                postContent.innerHTML = "<p class='text-red-500'>CRITICAL ERROR: Failed to decode post.</p>";
+                postContent.innerHTML = "<p class='text-red-500 font-mono'>CONNECTION_TIMEOUT: Could not retrieve markdown stream.</p>";
             }
         }
 
         async function fetchBlogs() {
             try {
-                // Fetching from your actual GitHub API endpoint
                 const response = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/blog`);
                 const files = await response.json();
-                
-                // Sort by name (which includes date in your slug) to show newest first
                 const posts = files.filter(file => file.name.endsWith('.md')).reverse();
 
                 if (posts.length === 0) {
-                    blogList.innerHTML = "<p class='text-slate-500 text-center py-10'>No insights recorded in the database yet.</p>";
+                    blogList.innerHTML = "<p class='text-slate-500 text-center py-10'>No data packets found in the 'blog' directory.</p>";
                     return;
                 }
 
@@ -190,16 +209,21 @@
 
                 posts.forEach(post => {
                     const card = document.createElement('div');
-                    card.className = "blog-card p-8 rounded-2xl cursor-pointer group";
+                    card.className = "blog-card p-10 rounded-[2rem] cursor-pointer group flex flex-col md:flex-row justify-between items-start md:items-center gap-6";
                     
-                    // Cleaner title from filename
-                    const displayTitle = post.name.replace('.md', '').split('-').slice(3).join(' ') || post.name.replace('.md', '');
+                    const titleClean = post.name.replace('.md', '').split('-').slice(3).join(' ') || post.name.replace('.md', '');
 
                     card.innerHTML = `
-                        <div class="flex justify-between items-center">
-                            <div>
-                                <h2 class="text-2xl font-bold capitalize text-white group-hover:text-blue-400 transition">${displayTitle}</h2>
-                                <p class="text-emerald-500 text-xs font-black mt-2 tracking-widest">ACCESS LOGS →</p>
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold text-slate-100 group-hover:text-emerald-400 transition-colors capitalize mb-2">${titleClean}</h2>
+                            <p class="text-slate-500 text-sm font-medium">Research Paper / Documentation</p>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <span class="text-[10px] font-black text-slate-600 group-hover:text-blue-400 transition tracking-[0.2em] uppercase">Open Log</span>
+                            <div class="h-10 w-10 rounded-full border border-slate-800 flex items-center justify-center group-hover:border-emerald-500 transition-colors">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-emerald-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" />
+                                </svg>
                             </div>
                         </div>
                     `;
@@ -209,7 +233,7 @@
                 });
 
             } catch (error) {
-                blogList.innerHTML = "<p class='text-red-500 text-center py-10'>NETWORK ERROR: GitHub connection timed out.</p>";
+                blogList.innerHTML = "<p class='text-red-400 font-mono'>FATAL_ERROR: Failed to establish handshake with GitHub.</p>";
             }
         }
 
