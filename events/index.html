@@ -86,32 +86,50 @@
         }
 
         async function readEvent(downloadUrl) {
-            gridView.classList.add('hidden');
-            readerView.classList.remove('hidden');
-            backBtn.classList.remove('hidden');
-            eventContent.innerHTML = "Loading...";
+    gridView.classList.add('hidden');
+    readerView.classList.remove('hidden');
+    backBtn.classList.remove('hidden');
+    eventContent.innerHTML = "Loading...";
 
-            try {
-                const response = await fetch(downloadUrl);
-                const rawText = await response.text();
-                const parts = rawText.split('---');
-                let finalMarkdown = rawText, metadata = {};
+    try {
+        const response = await fetch(downloadUrl);
+        const rawText = await response.text();
+        const parts = rawText.split('---');
+        let finalMarkdown = rawText, metadata = {};
 
-                if (parts.length >= 3) {
-                    finalMarkdown = parts.slice(2).join('---');
-                    parts[1].split('\n').forEach(line => {
-                        const [key, ...val] = line.split(':');
-                        if (key) metadata[key.trim()] = val.join(':').trim();
-                    });
-                }
-
-                eventHeader.innerHTML = `
-                    <div class="flex items-center gap-4 mb-6"><span class="bg-brand-green/10 text-brand-green px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">Live Session</span></div>
-                    <h1 class="text-4xl md:text-6xl font-black text-gray-950 uppercase leading-tight mb-10">${metadata.title || 'Event'}</h1>
-                `;
-                eventContent.innerHTML = marked.parse(finalMarkdown);
-            } catch (e) { eventContent.innerHTML = "Error."; }
+        if (parts.length >= 3) {
+            finalMarkdown = parts.slice(2).join('---');
+            parts[1].split('\n').forEach(line => {
+                const [key, ...val] = line.split(':');
+                if (key) metadata[key.trim()] = val.join(':').trim();
+            });
         }
+
+        // Logic to handle the image path
+        let imageHtml = '';
+        if (metadata.image) {
+            // Ensure the path is correct (GitHub raw images need the full path if not hosted locally)
+            const imageUrl = metadata.image.startsWith('http') 
+                ? metadata.image 
+                : `https://raw.githubusercontent.com/${GITHUB_USER}/${REPO_NAME}/main${metadata.image}`;
+            
+            imageHtml = `<img src="${imageUrl}" class="w-full h-auto rounded-3xl mb-10 shadow-lg border border-gray-100" alt="${metadata.title}">`;
+        }
+
+        eventHeader.innerHTML = `
+            <div class="flex items-center gap-4 mb-6">
+                <span class="bg-brand-green/10 text-brand-green px-3 py-1 rounded-full text-[10px] font-black tracking-widest uppercase">Live Session</span>
+            </div>
+            ${imageHtml} 
+            <h1 class="text-4xl md:text-6xl font-black text-gray-950 uppercase leading-tight mb-10">${metadata.title || 'Event'}</h1>
+        `;
+        
+        eventContent.innerHTML = marked.parse(finalMarkdown);
+    } catch (e) { 
+        console.error(e);
+        eventContent.innerHTML = "Error loading event details."; 
+    }
+}
 
         async function fetchEvents() {
             try {
