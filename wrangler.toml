@@ -7,5 +7,8 @@ directory = "./"
 binding = "ASSETS"
 
 [vars]
-# You can put non-sensitive variables here, 
-# but GITHUB_CLIENT_SECRET must be added in the Cloudflare Dashboard UI.
+# Add your GitHub Client ID here
+GITHUB_CLIENT_ID = "Ov23lixI9kGDvUP0XccC"
+
+# Note: GITHUB_CLIENT_SECRET must NOT be put here for security. 
+# It must be added via the Cloudflare Dashboard UI as a "Secret".
