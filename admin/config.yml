@@ -1,13 +1,12 @@
 backend:
-  name: github
-  repo: quantumclubgcek/quantumclubgceksite
-  branch: main
-  # This must match your workers.dev URL
-  base_url: https://quantumclubgceksite.quantumclubgcek.workers.dev
-  auth_endpoint: api/auth
+  name: git-gateway
+  # This points to your Cloudflare Worker middleware
+  gateway_url: https://quantumclubgceksite.quantumclubgcek.workers.dev/api/gateway
+  identity_url: https://quantumclubgceksite.quantumclubgcek.workers.dev/api/identity
 
-media_folder: "assets/uploads"
-public_folder: "/assets/uploads"
+# Updated to match your specific directory structure
+media_folder: "assets/images/uploads"
+public_folder: "/assets/images/uploads"
 
 collections:
   - name: "blog"
@@ -32,4 +31,3 @@ collections:
       - {label: "Event Poster", name: "image", widget: "image"}
       - {label: "Description", name: "description", widget: "text"}
       - {label: "Resource Download (PDF/Doc)", name: "upload", widget: "file", required: false}
-      - {label: "Body Details", name: "body", widget: "markdown"}
