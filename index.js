@@ -14,10 +14,11 @@ export default {
       });
     }
 
-    // 1. IDENTITY ROUTE
+    // 1. IDENTITY ROUTE (Dynamic Multi-User)
     if (url.pathname.startsWith("/api/identity")) {
-      let userEmail = "member@quantumclubgcek.com"; 
+      let userEmail = "member@quantumclubgcek.com";
 
+      // Dynamically catch the email from the login POST
       if (request.method === "POST") {
         try {
           const body = await request.clone().json();
@@ -25,18 +26,18 @@ export default {
         } catch (e) {}
       }
 
-      // This object MUST match exactly what the CMS expects
+      // Mandatory structure to satisfy Decap CMS internal checks
       const userObj = {
         id: btoa(userEmail).substring(0, 12),
         email: userEmail,
         app_metadata: { roles: ["admin"] },
         user_metadata: { 
-          full_name: "Club Member", 
+          full_name: "Quantum Member", 
           avatar_url: "" 
         }
       };
 
-      // We stringify the WHOLE user metadata into the JWT to prevent 'undefined'
+      // Wrap everything into the JWT payload
       const tokenPayload = {
         sub: userObj.id,
         email: userObj.email,
@@ -54,7 +55,10 @@ export default {
         token_type: "bearer",
         user: userObj
       }), {
-        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        headers: { 
+          "Content-Type": "application/json", 
+          "Access-Control-Allow-Origin": "*" 
+        },
       });
     }
 
@@ -93,7 +97,7 @@ export default {
       }
     }
 
-    // 3. FALLBACK: ASSETS
+    // 3. FALLBACK: SERVE SITE ASSETS
     try {
       return await env.ASSETS.fetch(request);
     } catch (e) {
