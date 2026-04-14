@@ -8,7 +8,6 @@
     <meta name="description" content="Official website of Quantum Club, GCE Kannur. Exploring quantum computing, electronics, and advanced circuit design.">
     
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     
     <script>
@@ -44,12 +43,9 @@
     <nav class="flex justify-between items-center p-6 border-b border-gray-100 bg-white/95 sticky top-0 z-50 backdrop-blur-sm">
         <div class="text-xl font-black tracking-widest text-brand-blue uppercase">Quantum Club</div>
         <div class="space-x-8 text-sm font-semibold hidden md:flex items-center">
-            <a href="/" class="text-gray-700 hover:text-brand-blue transition uppercase tracking-tight">Home</a>
+            <a href="/" class="text-brand-blue border-b-2 border-brand-blue transition uppercase tracking-tight">Home</a>
             <a href="/events" class="text-gray-700 hover:text-brand-blue transition uppercase tracking-tight">Events</a>
             <a href="/blog" class="text-gray-700 hover:text-brand-blue transition uppercase tracking-tight">Blog</a>
-            <a href="/admin/" class="bg-gradient-to-r from-brand-blue to-brand-blueDark text-white px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest glow transition-all">
-                Admin Portal
-            </a>
         </div>
     </nav>
 
@@ -120,78 +116,51 @@
     </footer>
 
     <script>
-      // Netlify Identity Logic
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => {
-          document.location.href = "/admin/";
-        });
-      }
-    });
-  }
+        const GITHUB_ORG = 'quantumclubgcek'; 
+        const REPO_NAME = 'quantumclubgceksite';
 
-  // UPDATED: More robust fetch logic
-  // CHANGE THESE TWO LINES:
-const GITHUB_ORG = 'quantumclubgcek'; 
-const REPO_NAME = 'quantumclubgceksite';
+        async function updateHomePreviews() {
+            const blogTitleEl = document.getElementById('latest-blog-title');
+            const eventTitleEl = document.getElementById('latest-event-title');
 
-  async function updateHomePreviews() {
-      const blogTitleEl = document.getElementById('latest-blog-title');
-      const eventTitleEl = document.getElementById('latest-event-title');
+            try {
+                // Fetch Blog Data
+                const blogRes = await fetch(`https://api.github.com/repos/${GITHUB_ORG}/${REPO_NAME}/contents/blog`);
+                const blogFiles = await blogRes.json();
+                
+                if (Array.isArray(blogFiles)) {
+                    const posts = blogFiles.filter(f => f.name.endsWith('.md'));
+                    if (posts.length > 0) {
+                        const latest = posts[posts.length - 1];
+                        const cleanTitle = latest.name.replace('.md', '').split('-').filter(p => isNaN(p)).join(' ');
+                        blogTitleEl.innerText = cleanTitle;
+                    } else {
+                        blogTitleEl.innerText = "No Posts Yet";
+                    }
+                }
 
-      try {
-          // Fetch Blog Data
-          const blogRes = await fetch(`https://api.github.com/repos/${GITHUB_ORG}/${REPO_NAME}/contents/blog`);
-          const blogFiles = await blogRes.json();
-          
-          if (Array.isArray(blogFiles)) {
-              // Filter for markdown files and sort to get the last one
-              const posts = blogFiles.filter(f => f.name.endsWith('.md'));
-              if (posts.length > 0) {
-                  const latest = posts[posts.length - 1]; // Get the last file in the folder
-                  const cleanTitle = latest.name.replace('.md', '').split('-').filter(p => isNaN(p)).join(' ');
-                  blogTitleEl.innerText = cleanTitle;
-              } else {
-                  blogTitleEl.innerText = "No Posts Yet";
-              }
-          }
+                // Fetch Event Data
+                const eventRes = await fetch(`https://api.github.com/repos/${GITHUB_ORG}/${REPO_NAME}/contents/events`);
+                const eventFiles = await eventRes.json();
+                
+                if (Array.isArray(eventFiles)) {
+                    const events = eventFiles.filter(f => f.name.endsWith('.md'));
+                    if (events.length > 0) {
+                        const latest = events[events.length - 1];
+                        const cleanTitle = latest.name.replace('.md', '').split('-').filter(p => isNaN(p)).join(' ');
+                        eventTitleEl.innerText = cleanTitle;
+                    } else {
+                        eventTitleEl.innerText = "No Events Scheduled";
+                    }
+                }
+            } catch (e) {
+                console.error("GitHub Fetch Error:", e);
+                blogTitleEl.innerText = "Database Connection Lost";
+                eventTitleEl.innerText = "Database Connection Lost";
+            }
+        }
 
-          // Fetch Event Data
-          const eventRes = await fetch(`https://api.github.com/repos/${GITHUB_ORG}/${REPO_NAME}/contents/events`);
-          const eventFiles = await eventRes.json();
-          
-          if (Array.isArray(eventFiles)) {
-              const events = eventFiles.filter(f => f.name.endsWith('.md'));
-              if (events.length > 0) {
-                  const latest = events[events.length - 1];
-                  const cleanTitle = latest.name.replace('.md', '').split('-').filter(p => isNaN(p)).join(' ');
-                  eventTitleEl.innerText = cleanTitle;
-              } else {
-                  eventTitleEl.innerText = "No Events Scheduled";
-              }
-          }
-      } catch (e) {
-          console.error("GitHub Fetch Error:", e);
-          blogTitleEl.innerText = "Database Connection Lost";
-          eventTitleEl.innerText = "Database Connection Lost";
-      }
-  }
-
-  
-  window.addEventListener('DOMContentLoaded', updateHomePreviews);
+        window.addEventListener('DOMContentLoaded', updateHomePreviews);
     </script>
-    <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
-<script>
-  if (window.netlifyIdentity) {
-    window.netlifyIdentity.on("init", user => {
-      if (!user) {
-        window.netlifyIdentity.on("login", () => {
-          document.location.href = "/admin/";
-        });
-      }
-    });
-  }
-</script>
 </body>
 </html>
