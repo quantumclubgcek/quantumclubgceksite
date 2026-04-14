@@ -16,7 +16,7 @@ export default {
 
     // 1. IDENTITY ROUTE (Admin-Only Check)
     if (url.pathname.startsWith("/api/identity")) {
-      const ADMIN_EMAIL = "your-admin-email@gmail.com"; // <-- CHANGE THIS TO YOUR EMAIL
+      const ADMIN_EMAIL = "member@quantum.club"; // <-- CHANGE THIS TO YOUR EMAIL
       let attemptedEmail = "";
 
       if (request.method === "POST") {
