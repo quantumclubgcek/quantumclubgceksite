@@ -1,9 +1,10 @@
 backend:
   name: github
-  repo: quantum-club-repo/quantum-club-site
+  repo: quantumclubgcek/quantumclubgceksite
   branch: main
-  base_url: https://quantumclubgcek.firebaseapp.com
-  auth_endpoint: /auth
+  # This must match your workers.dev URL
+  base_url: https://quantumclubgceksite.quantumclubgcek.workers.dev
+  auth_endpoint: api/auth
 
 media_folder: "assets/uploads"
 public_folder: "/assets/uploads"
