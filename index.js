@@ -1,6 +1,6 @@
 export default {
   async fetch(request, env) {
-    const url =new URL(request.url);
+    const url = new URL(request.url);
 
     // 0. HANDLE CORS PREFLIGHT
     if (request.method === "OPTIONS") {
