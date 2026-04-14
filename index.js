@@ -14,11 +14,11 @@ export default {
       });
     }
 
-    // 1. IDENTITY ROUTE (Fixed for 'full_name' error)
+    // 1. DYNAMIC IDENTITY ROUTE
     if (url.pathname.startsWith("/api/identity")) {
-      let userEmail = "admin@quantum.club"; 
+      let userEmail = "club-member@quantum.club"; // Fallback
 
-      // Try to extract the real email from the login attempt
+      // Capture the email used during the Firebase login attempt
       if (request.method === "POST") {
         try {
           const body = await request.clone().json();
@@ -26,40 +26,32 @@ export default {
         } catch (e) { /* use default */ }
       }
 
-      // We explicitly define user_metadata to stop the 'full_name' error
-      const userObj = {
-        id: btoa(userEmail).substring(0, 10),
+      // Create a payload that identifies the specific user
+      const userPayload = {
+        sub: btoa(userEmail).substring(0, 12), // Unique ID per user
         email: userEmail,
         app_metadata: { roles: ["admin"] },
-        user_metadata: { 
-          full_name: userEmail.split('@')[0],
-          avatar_url: "" 
-        }
+        user_metadata: {} // Empty as requested, but present to prevent CMS errors
       };
 
-      const encodedPayload = btoa(JSON.stringify({
-        sub: userObj.id,
-        email: userObj.email,
-        app_metadata: userObj.app_metadata,
-        user_metadata: userObj.user_metadata
-      })).replace(/=/g, "");
-
+      const encodedPayload = btoa(JSON.stringify(userPayload)).replace(/=/g, "");
       const finalJWT = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.${encodedPayload}.signature`;
 
       return new Response(JSON.stringify({
         token: finalJWT,
         access_token: finalJWT,
         token_type: "bearer",
-        user: userObj // This contains the user_metadata.full_name
+        user: userPayload
       }), {
         headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
     }
 
-    // 2. GATEWAY ROUTE (Bridge to GitHub)
+    // 2. GATEWAY ROUTE (The GitHub Bridge)
     if (url.pathname.startsWith("/api/gateway")) {
       const path = url.pathname.replace("/api/gateway", "");
 
+      // Bypass the 404 settings error
       if (path === "/settings" || path === "/settings/") {
         return new Response(JSON.stringify({ roles: ["admin"], github_enabled: true }), {
           headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
@@ -87,14 +79,11 @@ export default {
           headers: responseHeaders,
         });
       } catch (err) {
-        return new Response(JSON.stringify({ error: "Bridge failed" }), {
-          status: 500,
-          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }
-        });
+        return new Response("Bridge Connection Failed", { status: 500 });
       }
     }
 
-    // 3. FALLBACK: ASSETS
+    // 3. FALLBACK: SERVE ASSETS
     try {
       return await env.ASSETS.fetch(request);
     } catch (e) {
