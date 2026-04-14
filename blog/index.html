@@ -155,4 +155,65 @@
                 }
 
                 postContent.innerHTML = `
-                    <h1 class="post-title capitalize">${metadata.title || 'Untitled
+                    <h1 class="post-title capitalize">${metadata.title || 'Untitled Archive'}</h1>
+                    <div class="post-meta">
+                        <span class="text-blue-400">${metadata.author || 'RESEARCHER'}</span>
+                        <span class="text-slate-700">//</span>
+                        <span class="text-emerald-500">${dateDisplay}</span>
+                    </div>
+                    ${thumbSrc ? `<img src="${thumbSrc}" class="w-full h-auto max-h-[450px] object-cover rounded-3xl mb-12 border border-slate-800 shadow-2xl">` : ''}
+                    <div class="prose-container">
+                        ${marked.parse(finalMarkdown)}
+                    </div>
+                `;
+                window.scrollTo(0,0);
+            } catch (err) {
+                postContent.innerHTML = "<p class='text-red-500'>CRITICAL ERROR: Failed to decode post.</p>";
+            }
+        }
+
+        async function fetchBlogs() {
+            try {
+                // Fetching from your actual GitHub API endpoint
+                const response = await fetch(`https://api.github.com/repos/${GITHUB_USER}/${REPO_NAME}/contents/blog`);
+                const files = await response.json();
+                
+                // Sort by name (which includes date in your slug) to show newest first
+                const posts = files.filter(file => file.name.endsWith('.md')).reverse();
+
+                if (posts.length === 0) {
+                    blogList.innerHTML = "<p class='text-slate-500 text-center py-10'>No insights recorded in the database yet.</p>";
+                    return;
+                }
+
+                blogList.innerHTML = ''; 
+
+                posts.forEach(post => {
+                    const card = document.createElement('div');
+                    card.className = "blog-card p-8 rounded-2xl cursor-pointer group";
+                    
+                    // Cleaner title from filename
+                    const displayTitle = post.name.replace('.md', '').split('-').slice(3).join(' ') || post.name.replace('.md', '');
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h2 class="text-2xl font-bold capitalize text-white group-hover:text-blue-400 transition">${displayTitle}</h2>
+                                <p class="text-emerald-500 text-xs font-black mt-2 tracking-widest">ACCESS LOGS →</p>
+                            </div>
+                        </div>
+                    `;
+                    
+                    card.onclick = () => readPost(post.download_url);
+                    blogList.appendChild(card);
+                });
+
+            } catch (error) {
+                blogList.innerHTML = "<p class='text-red-500 text-center py-10'>NETWORK ERROR: GitHub connection timed out.</p>";
+            }
+        }
+
+        fetchBlogs();
+    </script>
+</body>
+</html>
