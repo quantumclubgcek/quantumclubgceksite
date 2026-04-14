@@ -51,7 +51,6 @@
             <a href="/" class="text-gray-700 hover:text-brand-blue transition uppercase tracking-tight">Home</a>
             <a href="/events" class="text-brand-blue transition uppercase tracking-tight border-b-2 border-brand-blue">Events</a>
             <a href="/blog" class="text-gray-700 hover:text-brand-blue transition uppercase tracking-tight">Blog</a>
-            <a href="/admin/" class="bg-gradient-to-r from-brand-blue to-brand-blueDark text-white px-5 py-2.5 rounded-full text-xs font-bold uppercase tracking-widest glow transition-all">Admin Portal</a>
         </div>
     </nav>
 
@@ -97,7 +96,6 @@
                 const response = await fetch(downloadUrl);
                 const rawText = await response.text();
                 
-                // Parse Front Matter
                 const parts = rawText.split('---');
                 let finalMarkdown = rawText;
                 let metadata = {};
@@ -112,7 +110,6 @@
                     });
                 }
 
-                // Handle Image Construction
                 let imageHtml = '';
                 if (metadata.image) {
                     const imageUrl = metadata.image.startsWith('http') 
@@ -127,7 +124,6 @@
                     <h1 class="text-4xl md:text-6xl font-black text-gray-950 uppercase leading-tight mb-10">${metadata.title || 'Untitled Event'}</h1>
                 `;
                 
-                // Render Markdown content using marked.js
                 eventContent.innerHTML = marked.parse(finalMarkdown);
                 
             } catch (e) { 
