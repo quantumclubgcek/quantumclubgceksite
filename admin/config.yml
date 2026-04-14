@@ -30,6 +30,5 @@ collections:
       - {label: "Event Name", name: "title", widget: "string"}
       - {label: "Date", name: "date", widget: "date"}
       - {label: "Event Poster", name: "image", widget: "image"}
-      - {label: "Description", name: "description", widget: "text"}
       - {label: "Resource Download (PDF/Doc)", name: "upload", widget: "file", required: false}
       - {label: "Body Details", name: "body", widget: "markdown"}
