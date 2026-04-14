@@ -14,30 +14,37 @@ export default {
       });
     }
 
-    // 1. IDENTITY ROUTE (Dynamic Multi-User)
+    // 1. IDENTITY ROUTE (Admin-Only Check)
     if (url.pathname.startsWith("/api/identity")) {
-      let userEmail = "member@quantumclubgcek.com";
+      const ADMIN_EMAIL = "your-admin-email@gmail.com"; // <-- CHANGE THIS TO YOUR EMAIL
+      let attemptedEmail = "";
 
-      // Dynamically catch the email from the login POST
       if (request.method === "POST") {
         try {
           const body = await request.clone().json();
-          if (body.email) userEmail = body.email;
+          attemptedEmail = body.email;
         } catch (e) {}
       }
 
-      // Mandatory structure to satisfy Decap CMS internal checks
+      // STRICT CHECK: If the email doesn't match the admin email, reject the request
+      if (attemptedEmail !== ADMIN_EMAIL) {
+        return new Response(JSON.stringify({ error: "Unauthorized: Admin access only." }), {
+          status: 401,
+          headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
+        });
+      }
+
+      // If it matches, create the session object with mandatory metadata
       const userObj = {
-        id: btoa(userEmail).substring(0, 12),
-        email: userEmail,
+        id: btoa(ADMIN_EMAIL).substring(0, 12),
+        email: ADMIN_EMAIL,
         app_metadata: { roles: ["admin"] },
         user_metadata: { 
-          full_name: "Quantum Member", 
+          full_name: "Admin User", 
           avatar_url: "" 
         }
       };
 
-      // Wrap everything into the JWT payload
       const tokenPayload = {
         sub: userObj.id,
         email: userObj.email,
@@ -55,10 +62,7 @@ export default {
         token_type: "bearer",
         user: userObj
       }), {
-        headers: { 
-          "Content-Type": "application/json", 
-          "Access-Control-Allow-Origin": "*" 
-        },
+        headers: { "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" },
       });
     }
 
@@ -97,7 +101,7 @@ export default {
       }
     }
 
-    // 3. FALLBACK: SERVE SITE ASSETS
+    // 3. FALLBACK: ASSETS
     try {
       return await env.ASSETS.fetch(request);
     } catch (e) {
